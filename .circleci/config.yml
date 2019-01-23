@@ -1,0 +1,29 @@
+version: 2
+jobs:
+  build:
+    docker:
+        - image: cibuilds/hugo:latest
+    working_directory: ~/hugo
+    environment:
+      HUGO_BUILD_DIR: ~/hugo/public
+    steps:
+      - run: apk update && apk add git
+      - checkout
+      - run: ls
+      - run: git submodule sync && git submodule update --init
+      - run: HUGO_ENV=production hugo -v -d $HUGO_BUILD_DIR
+      - run:
+          name: config
+          command: |
+              git config --global user.name "morimolymoly"
+              git config --global user.email "morimolymoly@gmail.com"
+      - run:
+          name: push to master
+          command: |
+              cd $HUGO_BUILD_DIR
+              git init
+              git remote add origin https://github.com/morimolymoly/article_bay
+              git add .
+              git commit -m "[ci skip] publish"
+              git push origin master -f
+              
